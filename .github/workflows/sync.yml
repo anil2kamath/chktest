@@ -1,4 +1,4 @@
-name: Sync selected folders to test-eval
+name: Sync selected files/folders to test-eval
 
 on:
   push:
@@ -13,36 +13,46 @@ jobs:
       - name: Checkout source repo
         uses: actions/checkout@v3
 
-      - name: Read folders to push from push.txt
-        id: readfolders
+      - name: Read files/folders to push from push.txt
+        id: readitems
         run: |
           mkdir selected
-          echo "Contents of push.txt:"
+          echo "📄 Contents of push.txt:"
           cat push.txt
 
-          while IFS= read -r line || [ -n "$line" ]; do
-            echo "Processing line: $line"
-            if [[ "$line" == *"*"* ]]; then
-              echo "Wildcard detected"
-              cp -r $line selected/ 2>/dev/null || true
-            else
-              [ -d "$line" ] && cp -r "$line" selected/
-            fi
+          while IFS= read -r line || [[ -n "$line" ]]; do
+            entry=$(echo "$line" | sed 's/^push[[:space:]]*//')  # remove 'push' prefix
+            echo "🔍 Processing: $entry"
+
+            for item in $entry; do
+              if [ -e "$item" ]; then
+                echo "✅ Copying $item"
+                cp -r "$item" selected/
+              else
+                echo "⚠️ Not found: $item"
+              fi
+            done
           done < push.txt
 
-          echo "Selected folders:"
-          ls selected
+          echo "📂 Contents in selected/:"
+          ls -la selected || true
 
       - name: Initialize destination repo
         run: |
           cd selected
-          git init
+          git init -b master
           git config user.name "Anil Kamath"
           git config user.email "anil2kamath@gmail.com"
-          git add .
-          git commit -m "Synced selected folders"
+
+          if git status --porcelain | grep .; then
+            git add .
+            git commit -m "Synced selected files/folders"
+          else
+            echo "🚫 Nothing to commit"
+          fi
 
       - name: Push to destination repo
+        if: success() && steps.readitems.outcome == 'success'
         env:
           TOKEN: ${{ secrets.DEST_REPO_TOKEN }}
         run: |
