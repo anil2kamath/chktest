@@ -1,0 +1,23 @@
+name: Sync to test-eval
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source repo
+        uses: actions/checkout@v3
+
+      - name: Push to destination repo
+        env:
+          TOKEN: ${{ secrets.DEST_REPO_TOKEN }}
+        run: |
+          git config --global user.name "Anil Kamath"
+          git config --global user.email "anil2kamath@gmail.com"
+
+          git remote add dest https://$TOKEN@github.com/tekstac-rep/test-eval.git
+          git push --force dest master
