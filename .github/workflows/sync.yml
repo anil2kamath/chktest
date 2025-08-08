@@ -1,4 +1,4 @@
-name: Sync to test-eval
+name: Sync selected folders to test-eval
 
 on:
   push:
@@ -8,16 +8,44 @@ on:
 jobs:
   sync:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout source repo
         uses: actions/checkout@v3
+
+      - name: Read folders to push from push.txt
+        id: readfolders
+        run: |
+          mkdir selected
+          echo "Contents of push.txt:"
+          cat push.txt
+
+          while IFS= read -r line || [ -n "$line" ]; do
+            echo "Processing line: $line"
+            if [[ "$line" == *"*"* ]]; then
+              echo "Wildcard detected"
+              cp -r $line selected/ 2>/dev/null || true
+            else
+              [ -d "$line" ] && cp -r "$line" selected/
+            fi
+          done < push.txt
+
+          echo "Selected folders:"
+          ls selected
+
+      - name: Initialize destination repo
+        run: |
+          cd selected
+          git init
+          git config user.name "Anil Kamath"
+          git config user.email "anil2kamath@gmail.com"
+          git add .
+          git commit -m "Synced selected folders"
 
       - name: Push to destination repo
         env:
           TOKEN: ${{ secrets.DEST_REPO_TOKEN }}
         run: |
-          git config --global user.name "Anil Kamath"
-          git config --global user.email "anil2kamath@gmail.com"
-
-          git remote add dest https://$TOKEN@github.com/tekstac-rep/test-eval.git
-          git push --force dest master
+          cd selected
+          git remote add origin https://$TOKEN@github.com/tekstac-rep/test-eval.git
+          git push --force origin master
