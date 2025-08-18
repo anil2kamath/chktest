@@ -1,0 +1,66 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "VisualEditor0",
+            "Effect": "Allow",
+            "Action": [
+                "ec2:*"
+            ],
+            "Resource": "*",
+            "Condition": {
+                "StringEquals": {
+                    "aws:RequestedRegion": "ap-south-1"
+                }
+            }
+        },
+        {
+			"Action": [
+				"iam:PassRole"
+			],
+			"Resource": [
+				"*"
+			],
+			"Effect": "Allow"
+		},
+        {
+            "Sid": "VisualEditor1",
+            "Effect": "Allow",
+            "Action": "iam:CreateServiceLinkedRole",
+            "Resource": "arn:aws:iam::*:role/aws-service-role/rds.amazonaws.com/AWSServiceRoleForRDS",
+            "Condition": {
+                "StringLike": {
+                    "iam:AWSServiceName": "rds.amazonaws.com"
+                }
+            }
+        },
+        {
+            "Sid": "VisualEditor2",
+            "Effect": "Allow",
+            "Action": "rds:*",
+            "Resource": "*",
+            "Condition": {
+                "StringEquals": {
+                    "aws:RequestedRegion": "ap-south-1"
+                },
+                "ForAllValues:StringEquals": {
+                    "rds:DatabaseEngine": "mysql",
+                    "rds:DatabaseClass": "db.t3.micro"
+                },
+                "ForAllValues:Bool": {
+                    "rds:StorageEncrypted": "false",
+                    "rds:MultiAz": "false"
+                },
+                "ForAllValues:NumericEquals": {
+                    "rds:StorageSize": "20"
+                }
+            }
+        },
+        {
+            "Sid": "VisualEditor3",
+            "Effect": "Allow",
+            "Action": "rds:CreateDBInstance",
+            "Resource": "*"
+        }
+    ]
+}
