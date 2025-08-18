@@ -11,6 +11,8 @@ do
 done	
 echo "Process of RDS Termination Completed"
 echo "Process of RDS Termination Completed"
+echo "Process of RDS Termination Completed"
+echo "Process of RDS Termination Completed"
 for instid in $(AWS_ACCESS_KEY_ID=$1 AWS_SECRET_ACCESS_KEY=$2 aws ec2 describe-instances --query "Reservations[*].Instances[*].[InstanceId]" --output text --region $aws_region)
  do
    AWS_ACCESS_KEY_ID=$1 AWS_SECRET_ACCESS_KEY=$2 aws ec2 terminate-instances --instance-ids $instid --region $aws_region
