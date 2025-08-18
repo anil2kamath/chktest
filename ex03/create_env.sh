@@ -12,7 +12,7 @@ else
         a=Failure
 fi
 
-
+echo "Success"
 ###### Create custom policy
 AWS_ACCESS_KEY_ID=$1 AWS_SECRET_ACCESS_KEY=$2 aws iam create-policy --policy-name restrictpolicy --policy-document file://$3/restrictpolicy.json --region $aws_region
 
